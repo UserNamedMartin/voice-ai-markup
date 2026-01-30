@@ -2,3 +2,31 @@
  * Global styles - Markup First Approach
  * Black and white only, no rounded corners, minimal styling
  */
+
+:root {
+    --foreground: #ffffff;
+    --background: #000000;
+}
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+html,
+body {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    /* Unscrollable */
+    background: var(--background);
+    color: var(--foreground);
+    font-family: monospace;
+    /* Keeping it raw/markup style */
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}

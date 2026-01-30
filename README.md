@@ -11,7 +11,7 @@ A voice AI application built with Next.js that enables:
 ## Design Philosophy: Markup First
 
 This is a **minimal markup version** - function over form:
-- Black and white colors only
+- **Black background, white text** (inverted high-contrast theme)
 - Simple rectangular shapes (no rounded corners)
 - Minimal styling - just enough to be functional
 - No branding, polish, or aesthetic decisions yet
@@ -92,17 +92,17 @@ ELEVENLABS_AGENT_ID=    # Required for phone calls (Conversational AI agent)
 ### Done
 - [x] Project structure scaffolded
 - [x] Placeholder files created
+- [x] Landing page (Grid layout, Black & White)
 
 ### TODO (Priority Order)
-1. [ ] Landing page (basic content)
-2. [ ] Voice page layout
-3. [ ] `/api/token` endpoint (OpenAI ephemeral token)
-4. [ ] `lib/realtime.ts` (WebRTC connection)
-5. [ ] VoiceButton component (start/stop)
-6. [ ] Transcript component (live messages)
-7. [ ] EventLog component (system events)
-8. [ ] `/api/call` endpoint (ElevenLabs)
-9. [ ] PhoneCall component
+1. [ ] Voice page layout
+2. [ ] `/api/token` endpoint (OpenAI ephemeral token)
+3. [ ] `lib/realtime.ts` (WebRTC connection)
+4. [ ] VoiceButton component (start/stop)
+5. [ ] Transcript component (live messages)
+6. [ ] EventLog component (system events)
+7. [ ] `/api/call` endpoint (ElevenLabs)
+8. [ ] PhoneCall component
 
 ---
 
