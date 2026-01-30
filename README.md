@@ -95,14 +95,14 @@ ELEVENLABS_AGENT_ID=    # Required for phone calls (Conversational AI agent)
 - [x] Landing page (Grid layout, Black & White)
 
 ### TODO (Priority Order)
-1. [ ] Voice page layout
+1. [x] Voice page layout
 2. [ ] `/api/token` endpoint (OpenAI ephemeral token)
 3. [ ] `lib/realtime.ts` (WebRTC connection)
-4. [ ] VoiceButton component (start/stop)
-5. [ ] Transcript component (live messages)
-6. [ ] EventLog component (system events)
+4. [x] VoiceButton component (start/stop)
+5. [x] Transcript component (live messages)
+6. [x] EventLog component (system events)
 7. [ ] `/api/call` endpoint (ElevenLabs)
-8. [ ] PhoneCall component
+8. [x] PhoneCall component
 
 ---
 
