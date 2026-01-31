@@ -6,6 +6,8 @@
  * Auto-scrolls to latest message.
  */
 
+import { useEffect, useRef } from 'react';
+
 interface Message {
     id: string;
     role: 'user' | 'assistant';
@@ -17,6 +19,14 @@ interface TranscriptProps {
 }
 
 export function Transcript({ messages = [] }: TranscriptProps) {
+    const bottomRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (bottomRef.current) {
+            bottomRef.current.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages]);
+
     return (
         <div style={{
             height: '100%',
@@ -75,6 +85,8 @@ export function Transcript({ messages = [] }: TranscriptProps) {
                         </div>
                     ))
                 )}
+                {/* Invisible element to scroll to */}
+                <div ref={bottomRef} />
             </div>
         </div>
     );

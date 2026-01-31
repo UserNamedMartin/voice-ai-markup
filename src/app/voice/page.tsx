@@ -19,30 +19,32 @@ import { AudioVisualizer } from '@/components/AudioVisualizer';
 export default function VoicePage() {
   // --- STATE ---
   const [isActive, setIsActive] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false); // Loading state
   const [events, setEvents] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
+  const [isMuted, setIsMuted] = useState(false);
 
   // Realtime Client & Streams
-  // We use a ref to keep the client instance stable across renders
-  // Realtime Client & Streams
-
-  // Actually, we need to import the class. Let's assume standard import at top.
-  // But we need to define the refs first.
   const realtimeClientRef = useRef<any>(null);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
-    // Initialize client on mount (or lazy load when needed, but mount is fine)
-    // We need to dynamically import RealtimeClient because it uses browser APIs
+    // Initialize client on mount
     async function init() {
+      // ... same init logic ...
+      // Note: For brevity in this tool call, I'm assuming the existing useEffect content 
+      // will validly merge if I don't change lines 36-72. 
+      // BUT replace_file_content requires exact target match. 
+      // I need to replace the whole file content or a large chunk to be safe with the new state hook insertion.
+      // Let's replace the whole upper part of the component including handleToggleSession.
       const RealtimeClient = (await import('@/lib/realtime')).default;
       realtimeClientRef.current = new RealtimeClient((event) => {
-        // Transform internal event to UI event
+        // ... (event handling logic identical to before)
         const uiEvent = {
           id: Date.now() + Math.random().toString(),
           time: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
-          message: '', // Will be filled below
+          message: '',
         };
 
         switch (event.type) {
@@ -55,7 +57,7 @@ export default function VoicePage() {
           default: uiEvent.message = `Unknown event: ${(event as any).type}`;
         }
 
-        setEvents(prev => [uiEvent, ...prev].slice(0, 50)); // Keep last 50 events
+        setEvents(prev => [...prev, uiEvent].slice(-50));
 
         if (event.type === 'user_transcript_done') {
           setMessages(prev => [...prev, { id: Date.now().toString() + Math.random(), role: 'user', text: event.text }]);
@@ -71,19 +73,44 @@ export default function VoicePage() {
     };
   }, []);
 
+  // Handle Muting Logic
+  useEffect(() => {
+    if (localStream) {
+      localStream.getAudioTracks().forEach(track => {
+        track.enabled = !isMuted;
+      });
+    }
+  }, [isMuted, localStream]);
+
   const handleToggleSession = async () => {
-    if (!isActive) {
-      // Start
-      setIsActive(true);
-      if (realtimeClientRef.current) {
-        await realtimeClientRef.current.connect();
-        // Get Access to streams for visualizers
-        setLocalStream(realtimeClientRef.current.getLocalStream());
-        setRemoteStream(realtimeClientRef.current.getRemoteStream());
+    if (!isActive && !isConnecting) {
+      // Start Request
+      setIsConnecting(true);
+
+      // Clear previous session data immediately
+      setEvents([]);
+      setMessages([]);
+
+      try {
+        if (realtimeClientRef.current) {
+          await realtimeClientRef.current.connect();
+          // Connected! Now switch UI
+          setLocalStream(realtimeClientRef.current.getLocalStream());
+          setRemoteStream(realtimeClientRef.current.getRemoteStream());
+
+          setIsActive(true);
+        }
+      } catch (e) {
+        console.error("Connection failed", e);
+        // Handle error state if needed
+      } finally {
+        setIsConnecting(false);
       }
     } else {
       // Stop
       setIsActive(false);
+      setIsConnecting(false);
+      setIsMuted(false);
       if (realtimeClientRef.current) {
         realtimeClientRef.current.disconnect();
         setLocalStream(null);
@@ -145,7 +172,6 @@ export default function VoicePage() {
           height: '100%',
           position: 'relative',
           backgroundColor: 'black',
-          transition: 'all 0.5s ease'
         }}>
 
           {/* Container for Centered Content */}
@@ -159,14 +185,13 @@ export default function VoicePage() {
           }}>
 
             {/* ACTIVE STATE: The "Cockpit" */}
-            {/* ACTIVE STATE: The "Cockpit" */}
-            {isActive && (
-              <div className="fade-in" style={{
+            {isActive ? (
+              <div style={{
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '1.5rem',
                 width: '100%',
-                maxWidth: '450px', // Slightly wider to accommodate visualizers
+                maxWidth: '450px',
                 padding: '0 2rem'
               }}>
 
@@ -174,11 +199,11 @@ export default function VoicePage() {
                 <div style={{
                   display: 'flex',
                   gap: '1rem',
-                  height: '60px', // Matches Stop Button height
+                  height: '60px',
                   width: '100%',
                   alignItems: 'stretch'
                 }}>
-                  {/* Agent Voice (Takes remaining space) */}
+                  {/* Agent Voice */}
                   <div style={{ flex: 1, height: '100%' }}>
                     <AudioVisualizer
                       stream={remoteStream}
@@ -188,14 +213,54 @@ export default function VoicePage() {
                     />
                   </div>
 
-                  {/* User Mic (Fixed Width) */}
-                  <div style={{ width: '60px', height: '100%' }}>
+                  {/* User Mic */}
+                  {/* User Mic (Fixed Width) - Clickable Mute Toggle */}
+                  <div
+                    onClick={() => setIsMuted(!isMuted)}
+                    style={{
+                      width: '60px',
+                      height: '100%',
+                      position: 'relative',
+                      cursor: 'pointer'
+                    }}
+                  >
                     <AudioVisualizer
-                      stream={localStream}
+                      stream={isMuted ? null : localStream}
                       label="You"
                       width="100%"
                       height="100%"
                     />
+                    {/* Mic Icon Overlay */}
+                    <div style={{
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      pointerEvents: 'none' // Let clicks pass through to container
+                    }}>
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+                        {isMuted ? (
+                          <>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                            <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
+                            <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                          </>
+                        ) : (
+                          <>
+                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+                            <line x1="12" y1="19" x2="12" y2="23"></line>
+                            <line x1="8" y1="23" x2="16" y2="23"></line>
+                          </>
+                        )}
+                      </svg>
+                    </div>
                   </div>
                 </div>
 
@@ -208,17 +273,16 @@ export default function VoicePage() {
                   />
                 </div>
               </div>
-            )}
-
-            {/* IDLE STATE: Start Button */}
-            {!isActive && (
+            ) : (
+              /* IDLE / LOADING STATE: Start Button */
               <div style={{
-                transition: 'opacity 0.3s ease',
-                opacity: isActive ? 0 : 1, // Fade out
-                pointerEvents: isActive ? 'none' : 'auto'
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center'
               }}>
                 <VoiceButton
                   isActive={isActive}
+                  isLoading={isConnecting}
                   onClick={handleToggleSession}
                 />
               </div>
@@ -226,35 +290,37 @@ export default function VoicePage() {
 
           </div>
 
-          {/* Idle State Elements (Slide Down & Hide) */}
-          <div className={`transition-all ${isActive ? 'slide-down-hidden' : ''}`} style={{
-            display: 'flex',
-            flexDirection: 'column',
-            flex: isActive ? 0 : 1 // Collapse space when active
-          }}>
-            {/* Separator */}
+          {/* Idle State Elements (Only visible when NOT active) */}
+          {!isActive && (
             <div style={{
               display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: '1rem',
-              color: '#666',
-              fontWeight: 'bold',
-              fontSize: '0.9rem',
-              flexShrink: 0
+              flexDirection: 'column',
+              flex: 1
             }}>
-              <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
-              <span style={{ padding: '0 1rem' }}>OR</span>
-              <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
-            </div>
+              {/* Separator */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '1rem',
+                color: '#666',
+                fontWeight: 'bold',
+                fontSize: '0.9rem',
+                flexShrink: 0
+              }}>
+                <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
+                <span style={{ padding: '0 1rem' }}>OR</span>
+                <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
+              </div>
 
-            {/* Phone Call Input */}
-            <div style={{ flex: 1, minHeight: 0 }}>
-              <PhoneCall
-                onCall={(phone) => console.log('Calling:', phone)}
-              />
+              {/* Phone Call Input */}
+              <div style={{ flex: 1, minHeight: 0 }}>
+                <PhoneCall
+                  onCall={(phone) => console.log('Calling:', phone)}
+                />
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
 

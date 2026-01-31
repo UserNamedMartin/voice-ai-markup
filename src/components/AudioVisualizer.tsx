@@ -15,6 +15,7 @@ export function AudioVisualizer({ stream, label, width = '120px', height = '80px
     const analyserRef = useRef<AnalyserNode | null>(null);
     const audioContextRef = useRef<AudioContext | null>(null);
 
+    // Initial / Cleanup Logic
     useEffect(() => {
         if (!stream || !canvasRef.current || !containerRef.current) return;
 
@@ -119,6 +120,23 @@ export function AudioVisualizer({ stream, label, width = '120px', height = '80px
         };
     }, [stream]);
 
+    // Handle clearing the canvas when stream is null/muted to remove "locked" frames
+    useEffect(() => {
+        if (!stream && canvasRef.current && containerRef.current) {
+            const canvas = canvasRef.current;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+                const rect = containerRef.current.getBoundingClientRect();
+                // We need to use dimensions proportional to how we scaled it
+                // But simple clearRect over a large area works for wiping
+                ctx.fillStyle = '#000000';
+                ctx.fillRect(0, 0, canvas.width, canvas.height); // Wipe entire backing store
+                // Also clearRect for safety if transform applied
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+    }, [stream]);
+
     return (
         <div ref={containerRef} style={{
             display: 'flex',
@@ -139,14 +157,10 @@ export function AudioVisualizer({ stream, label, width = '120px', height = '80px
                 position: 'relative',
                 overflow: 'hidden'
             }}>
-                {stream ? (
-                    <canvas
-                        ref={canvasRef}
-                        style={{ width: '100%', height: '100%' }}
-                    />
-                ) : (
-                    <div style={{ fontSize: '0.8rem', color: '#333' }}>Waiting...</div>
-                )}
+                <canvas
+                    ref={canvasRef}
+                    style={{ width: '100%', height: '100%' }}
+                />
             </div>
         </div>
     );

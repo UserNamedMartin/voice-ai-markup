@@ -9,9 +9,10 @@ interface VoiceButtonProps {
     isActive?: boolean;
     onClick: () => void;
     fullWidth?: boolean;
+    isLoading?: boolean;
 }
 
-export function VoiceButton({ isActive = false, onClick, fullWidth = false }: VoiceButtonProps) {
+export function VoiceButton({ isActive = false, onClick, fullWidth = false, isLoading = false }: VoiceButtonProps) {
     return (
         <div style={{
             display: 'flex',
@@ -37,23 +38,25 @@ export function VoiceButton({ isActive = false, onClick, fullWidth = false }: Vo
 
             <button
                 onClick={onClick}
+                disabled={isLoading}
                 style={{
                     width: fullWidth ? '100%' : '200px',
                     height: '60px',
                     border: '2px solid white',
-                    background: isActive ? 'white' : 'black',
+                    background: isActive ? 'white' : 'black', // Invert colors when active
                     color: isActive ? 'black' : 'white',
                     fontSize: '1rem',
                     textTransform: 'uppercase',
                     fontWeight: 'bold',
-                    cursor: 'pointer',
+                    cursor: isLoading ? 'wait' : 'pointer',
                     display: 'flex',
                     justifyContent: 'center',
                     alignItems: 'center',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    opacity: isLoading ? 0.7 : 1
                 }}
             >
-                {isActive ? 'Stop Session' : 'Start Session'}
+                {isLoading ? 'Connecting...' : (isActive ? 'Stop Session' : 'Start Session')}
             </button>
         </div>
     );

@@ -129,10 +129,10 @@ class RealtimeClient {
             session: {
                 modalities: ['text', 'audio'],
                 input_audio_transcription: {
-                    model: 'whisper-1', // User requested gpt-4o-transcribe but relying on standard whisper-1 for stability
+                    model: 'gpt-4o-transcribe',
                 },
                 turn_detection: {
-                    type: 'server_vad', // Enable server-side VAD
+                    type: 'semantic_vad',
                 }
             }
         };
