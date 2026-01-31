@@ -40,10 +40,12 @@ src/
 │   ├── VoiceButton.tsx           # Start/stop with mic animations
 │   ├── Transcript.tsx            # Live conversation display
 │   ├── EventLog.tsx              # System events display
-│   └── PhoneCall.tsx             # Phone input + call button
+│   ├── PhoneCall.tsx             # Phone input + call button
+│   └── AudioVisualizer.tsx       # Real-time frequency bars animation
 │
 └── lib/                          # Core business logic
     ├── realtime.ts               # OpenAI Realtime API (WebRTC client)
+    ├── prompts.ts                # System prompts and instructions
     └── calling.ts                # ElevenLabs phone call logic
 ```
 
@@ -96,8 +98,8 @@ ELEVENLABS_AGENT_ID=    # Required for phone calls (Conversational AI agent)
 
 ### TODO (Priority Order)
 1. [x] Voice page layout
-2. [ ] `/api/token` endpoint (OpenAI ephemeral token)
-3. [ ] `lib/realtime.ts` (WebRTC connection)
+2. [x] `/api/token` endpoint (OpenAI ephemeral token)
+3. [x] `lib/realtime.ts` (WebRTC connection)
 4. [x] VoiceButton component (start/stop)
 5. [x] Transcript component (live messages)
 6. [x] EventLog component (system events)
@@ -154,7 +156,9 @@ npm run dev
 | Ephemeral token pattern | Can't expose API key in browser; server generates short-lived token | 2024-01-30 |
 | Single `lib/` folder | Simpler than `lib/realtime/` + `lib/elevenlabs/`; can split later if needed | 2024-01-30 |
 | No `types/` folder | Types defined in the files that use them; can extract later if shared | 2024-01-30 |
+| Prompts as Code | System prompts stored in `lib/prompts.ts` instead of markdown files for reliability | 2024-01-31 |
+| Centered "Cockpit" Layout | Transitioning elements (Square User + Wide Agent visualizers) focuses user on the session | 2024-01-31 |
 
 ---
 
-*Last updated: 2024-01-30*
+*Last updated: 2026-01-31*

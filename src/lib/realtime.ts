@@ -19,6 +19,17 @@ class RealtimeClient {
     private audioEl: HTMLAudioElement | null = null;
     private onEvent: (event: VoiceEvent) => void;
 
+    // Public getters for streams (for visualization)
+    public getRemoteStream(): MediaStream | null {
+        return this.audioEl?.srcObject as MediaStream || null;
+    }
+
+    public getLocalStream(): MediaStream | null {
+        // We'll capture this in a property during connect
+        return this.localStream;
+    }
+    private localStream: MediaStream | null = null;
+
     constructor(onEvent: (event: VoiceEvent) => void) {
         this.onEvent = onEvent;
     }
@@ -53,6 +64,7 @@ class RealtimeClient {
 
             // Get local microphone audio
             const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.localStream = stream;
             this.pc.addTrack(stream.getTracks()[0]);
 
             // 3. Data Channel Setup
@@ -65,8 +77,9 @@ class RealtimeClient {
             await this.pc.setLocalDescription(offer);
 
             const baseUrl = 'https://api.openai.com/v1/realtime';
+            const model = 'gpt-realtime'; // Consistent with backend
 
-            const sdpResponse = await fetch(baseUrl, {
+            const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
                 method: 'POST',
                 body: offer.sdp,
                 headers: {
