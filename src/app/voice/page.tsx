@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Mic, MicOff } from 'lucide-react';
 import { VoiceButton } from '@/components/VoiceButton';
 import { PhoneCall } from '@/components/PhoneCall';
 import { EventLog } from '@/components/EventLog';
@@ -30,17 +31,9 @@ export default function VoicePage() {
   const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
 
   useEffect(() => {
-    // Initialize client on mount
     async function init() {
-      // ... same init logic ...
-      // Note: For brevity in this tool call, I'm assuming the existing useEffect content 
-      // will validly merge if I don't change lines 36-72. 
-      // BUT replace_file_content requires exact target match. 
-      // I need to replace the whole file content or a large chunk to be safe with the new state hook insertion.
-      // Let's replace the whole upper part of the component including handleToggleSession.
       const RealtimeClient = (await import('@/lib/realtime')).default;
       realtimeClientRef.current = new RealtimeClient((event) => {
-        // ... (event handling logic identical to before)
         const uiEvent = {
           id: Date.now() + Math.random().toString(),
           time: new Date().toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }),
@@ -240,26 +233,13 @@ export default function VoicePage() {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      pointerEvents: 'none' // Let clicks pass through to container
+                      pointerEvents: 'none'
                     }}>
-                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
-                        {isMuted ? (
-                          <>
-                            <line x1="1" y1="1" x2="23" y2="23"></line>
-                            <path d="M9 9v3a3 3 0 0 0 5.12 2.12M15 9.34V4a3 3 0 0 0-5.94-.6"></path>
-                            <path d="M17 16.95A7 7 0 0 1 5 12v-2m14 0v2a7 7 0 0 1-.11 1.23"></path>
-                            <line x1="12" y1="19" x2="12" y2="23"></line>
-                            <line x1="8" y1="23" x2="16" y2="23"></line>
-                          </>
-                        ) : (
-                          <>
-                            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
-                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                            <line x1="12" y1="19" x2="12" y2="23"></line>
-                            <line x1="8" y1="23" x2="16" y2="23"></line>
-                          </>
-                        )}
-                      </svg>
+                      {isMuted ? (
+                        <MicOff size={24} color="white" style={{ opacity: 0.5 }} />
+                      ) : (
+                        <Mic size={24} color="white" style={{ opacity: 0.5 }} />
+                      )}
                     </div>
                   </div>
                 </div>

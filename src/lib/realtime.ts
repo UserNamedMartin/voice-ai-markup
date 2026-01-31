@@ -1,10 +1,5 @@
 
-
 // Type definitions ensuring type safety
-export interface RealtimeConfig {
-    dangerouslyAllowAPIKeyToBeStoredInClient?: boolean; // Not used here, but part of standard types
-}
-
 export type VoiceEvent =
     | { type: 'speech_started' }
     | { type: 'speech_stopped' }
@@ -76,10 +71,8 @@ class RealtimeClient {
             const offer = await this.pc.createOffer();
             await this.pc.setLocalDescription(offer);
 
-            const baseUrl = 'https://api.openai.com/v1/realtime';
-            const model = 'gpt-realtime'; // Consistent with backend
-
-            const sdpResponse = await fetch(`${baseUrl}?model=${model}`, {
+            // Model and session config are already bound to the ephemeral token (set in /api/token)
+            const sdpResponse = await fetch('https://api.openai.com/v1/realtime', {
                 method: 'POST',
                 body: offer.sdp,
                 headers: {
@@ -105,6 +98,11 @@ class RealtimeClient {
     }
 
     disconnect() {
+        // Stop microphone tracks to release the mic
+        if (this.localStream) {
+            this.localStream.getTracks().forEach(track => track.stop());
+            this.localStream = null;
+        }
         if (this.pc) {
             this.pc.close();
             this.pc = null;
@@ -122,23 +120,8 @@ class RealtimeClient {
 
     private handleDataChannelOpen() {
         if (!this.dc) return;
-
-        // Initial Configuration
-        const sessionUpdate = {
-            type: 'session.update',
-            session: {
-                modalities: ['text', 'audio'],
-                input_audio_transcription: {
-                    model: 'gpt-4o-transcribe',
-                },
-                turn_detection: {
-                    type: 'semantic_vad',
-                }
-            }
-        };
-        this.dc.send(JSON.stringify(sessionUpdate));
-
-        // Trigger initial response
+        // Session config (modalities, transcription, turn detection) is set server-side in /api/token
+        // Just trigger the initial AI greeting
         this.dc.send(JSON.stringify({ type: 'response.create' }));
     }
 

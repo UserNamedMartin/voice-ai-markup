@@ -26,37 +26,6 @@ body {
     /* Keeping it raw/markup style */
 }
 
-/* Utilities for Transitions from Idle to Active */
-.transition-all {
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.slide-down-hidden {
-    opacity: 0;
-    transform: translateY(20px);
-    pointer-events: none;
-    height: 0 !important;
-    overflow: hidden;
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.fade-in {
-    animation: fadeIn 0.5s ease-out forwards;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
 a {
     color: inherit;
     text-decoration: none;

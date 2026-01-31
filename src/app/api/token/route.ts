@@ -25,6 +25,14 @@ export async function POST() {
                 model: model,
                 voice: 'marin',
                 instructions: SYSTEM_PROMPT,
+                // Session behavior settings (previously set client-side)
+                modalities: ['text', 'audio'],
+                input_audio_transcription: {
+                    model: 'gpt-4o-transcribe',
+                },
+                turn_detection: {
+                    type: 'semantic_vad',
+                },
             }),
         });
 

@@ -33,8 +33,8 @@ src/
 │   │   └── page.tsx              # Voice agent screen
 │   │
 │   └── api/                      # Server-side routes (API keys stay here)
-│       ├── token/route.ts        # Returns ephemeral token for WebRTC
-│       └── call/route.ts         # Initiates ElevenLabs phone call
+│       ├── token/route.ts        # Returns ephemeral token + session config
+│       └── call/route.ts         # Initiates ElevenLabs phone call (placeholder)
 │
 ├── components/                   # UI Components
 │   ├── VoiceButton.tsx           # Start/stop with mic animations
@@ -69,13 +69,27 @@ src/
   1. Client calls `/api/token` to get ephemeral session token
   2. Client uses token to establish WebRTC connection
   3. Audio streams bidirectionally, events via DataChannel
-- **Key file**: `src/lib/realtime.ts`
+
+#### Session Configuration (All Server-Side)
+
+All session settings are configured in **`/api/token/route.ts`** when creating the ephemeral token. This is the single source of truth.
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| `model` | `gpt-realtime` | Latest stable Realtime model |
+| `voice` | `marin` | AI voice selection |
+| `instructions` | `SYSTEM_PROMPT` | System prompt from `lib/prompts.ts` |
+| `modalities` | `['text', 'audio']` | Enable both text and audio output |
+| `input_audio_transcription.model` | `gpt-4o-transcribe` | Transcription model for user speech |
+| `turn_detection.type` | `semantic_vad` | AI-powered turn detection |
+
+The client (`lib/realtime.ts`) does **not** send session.update - it only triggers the initial response after connection.
 
 ### ElevenLabs Phone Calls
 
+- **Status**: Not implemented (placeholder)
 - **Endpoint**: `https://api.elevenlabs.io/v1/convai/twilio/outbound-call`
 - **Flow**: Client → `/api/call` → ElevenLabs API → Twilio → User's phone
-- **Key file**: `src/lib/calling.ts`
 
 ---
 
@@ -83,8 +97,8 @@ src/
 
 ```
 OPENAI_API_KEY=         # Required for Realtime API
-ELEVENLABS_API_KEY=     # Required for phone calls
-ELEVENLABS_AGENT_ID=    # Required for phone calls (Conversational AI agent)
+ELEVENLABS_API_KEY=     # Required for phone calls (not implemented)
+ELEVENLABS_AGENT_ID=    # Required for phone calls (not implemented)
 ```
 
 ---
@@ -152,12 +166,14 @@ npm run dev
 
 | Decision | Rationale | Date |
 |----------|-----------|------|
-| WebRTC over WebSocket | OpenAI recommends WebRTC for browsers (WebSocket deprecated) | 2024-01-30 |
-| Ephemeral token pattern | Can't expose API key in browser; server generates short-lived token | 2024-01-30 |
-| Single `lib/` folder | Simpler than `lib/realtime/` + `lib/elevenlabs/`; can split later if needed | 2024-01-30 |
-| No `types/` folder | Types defined in the files that use them; can extract later if shared | 2024-01-30 |
-| Prompts as Code | System prompts stored in `lib/prompts.ts` instead of markdown files for reliability | 2024-01-31 |
-| Centered "Cockpit" Layout | Transitioning elements (Square User + Wide Agent visualizers) focuses user on the session | 2024-01-31 |
+| WebRTC over WebSocket | OpenAI recommends WebRTC for browsers (WebSocket deprecated) | 2026-01-30 |
+| Ephemeral token pattern | Can't expose API key in browser; server generates short-lived token | 2026-01-30 |
+| Single `lib/` folder | Simpler than `lib/realtime/` + `lib/elevenlabs/`; can split later if needed | 2026-01-30 |
+| No `types/` folder | Types defined in the files that use them; can extract later if shared | 2026-01-30 |
+| Prompts as Code | System prompts stored in `lib/prompts.ts` instead of markdown files for reliability | 2026-01-31 |
+| Centered "Cockpit" Layout | Transitioning elements (Square User + Wide Agent visualizers) focuses user on the session | 2026-01-31 |
+| Server-Side Session Config | All session settings (model, voice, instructions) moved to `/api/token` for single source of truth | 2026-01-31 |
+| Lucide Icons | Switched from inline SVGs to Lucide React for cleaner code and maintainability | 2026-01-31 |
 
 ---
 
