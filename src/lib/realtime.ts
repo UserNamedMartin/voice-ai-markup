@@ -58,7 +58,13 @@ class RealtimeClient {
             };
 
             // Get local microphone audio
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: false,
+                    autoGainControl: true,
+                }
+            });
             this.localStream = stream;
             this.pc.addTrack(stream.getTracks()[0]);
 

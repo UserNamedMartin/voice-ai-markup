@@ -82,8 +82,19 @@ All session settings are configured in **`/api/token/route.ts`** when creating t
 | `modalities` | `['text', 'audio']` | Enable both text and audio output |
 | `input_audio_transcription.model` | `gpt-4o-transcribe` | Transcription model for user speech |
 | `turn_detection.type` | `semantic_vad` | AI-powered turn detection |
+| `input_audio_noise_reduction` | `near_field` | Server-side noise suppression |
+
+| `input_audio_noise_reduction` | `near_field` | Server-side noise suppression |
 
 The client (`lib/realtime.ts`) does **not** send session.update - it only triggers the initial response after connection.
+
+### Audio Pipeline Strategy
+
+To avoid "double processing" artifacts (robotic/underwater voice), we split responsibilities:
+1.  **Browser (`lib/realtime.ts`)**: Handles `echoCancellation` (mandatory) and `autoGainControl`. **`noiseSuppression` is DISABLED** here.
+2.  **Server (OpenAI)**: Handles `noiseReduction` (via `input_audio_noise_reduction: 'near_field'`).
+
+**Flow**: `Microphone` → `Browser Echo Cancellation` → `OpenAI Server Noise Reduction` → `Model`
 
 ### ElevenLabs Phone Calls
 
@@ -179,6 +190,8 @@ npm run dev
 | ElevenLabs Managed Mode | Selected "Managed Service" integration for phone calls to avoid complex WebSocket relay infrastructure for MVP | 2026-02-05 |
 | Unified Idle Layout | Kept `PhoneCall` component mounted during state transitions to preserve focus and dropdown interactions | 2026-02-05 |
 | Phone Number ID | Switched from raw `TWILIO_PHONE_NUMBER` to `ELEVENLABS_PHONE_NUMBER_ID` as Managed Service requires the ID, not the number string | 2026-02-05 |
+| Explicit Audio Constraints | Explicitly enabled `echoCancellation` and `autoGainControl` in WebRTC client; disabled `noiseSuppression` to use server-side alternative | 2026-02-05 |
+| Server-Side Noise Cancellation | Enabled `input_audio_noise_reduction: 'near_field'` in OpenAI session config to replace browser's inferior suppression | 2026-02-05 |
 
 ---
 

@@ -33,6 +33,9 @@ export async function POST() {
                 turn_detection: {
                     type: 'semantic_vad',
                 },
+                input_audio_noise_reduction: {
+                    type: 'near_field',
+                },
             }),
         });
 
