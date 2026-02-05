@@ -18,13 +18,13 @@ export async function POST(request: Request) {
 
         const agentId = process.env.ELEVENLABS_AGENT_ID;
         const apiKey = process.env.ELEVENLABS_API_KEY;
-        const twilioPhone = process.env.TWILIO_PHONE_NUMBER;
+        const phoneNumberId = process.env.ELEVENLABS_PHONE_NUMBER_ID;
 
-        if (!agentId || !apiKey || !twilioPhone) {
+        if (!agentId || !apiKey || !phoneNumberId) {
             return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
         }
 
-        const response = await fetch(`https://api.elevenlabs.io/v1/convai/outbound-call`, {
+        const response = await fetch(`https://api.elevenlabs.io/v1/convai/twilio/outbound-call`, {
             method: 'POST',
             headers: {
                 'xi-api-key': apiKey,
@@ -32,15 +32,14 @@ export async function POST(request: Request) {
             },
             body: JSON.stringify({
                 agent_id: agentId,
-                call_settings: {
-                    to_number: phone,
-                    from_number: twilioPhone
-                }
+                to_number: phone,
+                agent_phone_number_id: phoneNumberId
             })
         });
 
         if (!response.ok) {
             const error = await response.json();
+            console.error('ElevenLabs API Error:', JSON.stringify(error, null, 2)); // Debug log
             return NextResponse.json(error, { status: response.status });
         }
 

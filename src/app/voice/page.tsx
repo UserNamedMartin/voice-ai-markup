@@ -298,6 +298,7 @@ export default function VoicePage() {
                     onClick={(e) => {
                       e.stopPropagation(); // Prevent re-triggering focus
                       setIsPhoneMode(false);
+                      setPhoneSuccess(null); // Reset success state so input form appears again
                     }}
                     style={{
                       position: 'absolute',

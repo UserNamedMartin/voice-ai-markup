@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { PhoneInput } from 'react-international-phone';
 import { isValidPhoneNumber } from 'libphonenumber-js';
 import 'react-international-phone/style.css';
+import { PhoneOutgoing } from 'lucide-react';
 
 /**
  * PhoneCall Component
@@ -48,7 +49,9 @@ export function PhoneCall({ onCall, onFocus, onBlur, isLoading = false, successM
                 textAlign: 'center',
                 animation: 'fadeIn 0.5s ease'
             }}>
-                <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📞</div>
+                <div style={{ marginBottom: '1rem' }}>
+                    <PhoneOutgoing size={48} color="white" />
+                </div>
                 <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold', marginBottom: '1rem' }}>Calling you now...</h3>
                 <p style={{ fontSize: '1.1rem', color: '#888' }}>{successMessage}</p>
             </div>
