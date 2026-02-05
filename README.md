@@ -87,9 +87,10 @@ The client (`lib/realtime.ts`) does **not** send session.update - it only trigge
 
 ### ElevenLabs Phone Calls
 
-- **Status**: Not implemented (placeholder)
+- **Status**: Implemented (Basic "Managed Service" integration)
 - **Endpoint**: `https://api.elevenlabs.io/v1/convai/twilio/outbound-call`
 - **Flow**: Client → `/api/call` → ElevenLabs API → Twilio → User's phone
+- **Note**: This uses the "Easy" mode where ElevenLabs manages the call leg. Live transcripts are not available in this mode.
 
 ---
 
@@ -97,8 +98,9 @@ The client (`lib/realtime.ts`) does **not** send session.update - it only trigge
 
 ```
 OPENAI_API_KEY=         # Required for Realtime API
-ELEVENLABS_API_KEY=     # Required for phone calls (not implemented)
-ELEVENLABS_AGENT_ID=    # Required for phone calls (not implemented)
+ELEVENLABS_API_KEY=     # Required for outbound calls
+ELEVENLABS_AGENT_ID=    # Required for outbound calls
+ELEVENLABS_PHONE_NUMBER_ID= # Required for outbound calls (ID from ElevenLabs dashboard, starts with phnum_)
 ```
 
 ---
@@ -117,8 +119,8 @@ ELEVENLABS_AGENT_ID=    # Required for phone calls (not implemented)
 4. [x] VoiceButton component (start/stop)
 5. [x] Transcript component (live messages)
 6. [x] EventLog component (system events)
-7. [ ] `/api/call` endpoint (ElevenLabs)
-8. [x] PhoneCall component
+7. [x] `/api/call` endpoint (ElevenLabs)
+8. [x] PhoneCall component (with validation & loading states)
 
 ---
 
@@ -174,7 +176,10 @@ npm run dev
 | Centered "Cockpit" Layout | Transitioning elements (Square User + Wide Agent visualizers) focuses user on the session | 2026-01-31 |
 | Server-Side Session Config | All session settings (model, voice, instructions) moved to `/api/token` for single source of truth | 2026-01-31 |
 | Lucide Icons | Switched from inline SVGs to Lucide React for cleaner code and maintainability | 2026-01-31 |
+| ElevenLabs Managed Mode | Selected "Managed Service" integration for phone calls to avoid complex WebSocket relay infrastructure for MVP | 2026-02-05 |
+| Unified Idle Layout | Kept `PhoneCall` component mounted during state transitions to preserve focus and dropdown interactions | 2026-02-05 |
+| Phone Number ID | Switched from raw `TWILIO_PHONE_NUMBER` to `ELEVENLABS_PHONE_NUMBER_ID` as Managed Service requires the ID, not the number string | 2026-02-05 |
 
 ---
 
-*Last updated: 2026-01-31*
+*Last updated: 2026-02-05*
