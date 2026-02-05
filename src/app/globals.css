@@ -37,3 +37,117 @@ a {
         display: flex !important;
     }
 }
+
+/* ========================================
+   Phone Input Styles (react-international-phone)
+   ======================================== */
+
+/* Main container */
+.react-international-phone-input-container {
+    width: 100%;
+}
+
+/* Country selector button */
+.phone-country-button {
+    background: black !important;
+    border: 2px solid white !important;
+    border-radius: 0 !important;
+    height: auto !important;
+    padding: 0.75rem 0.5rem !important;
+}
+
+.phone-country-button:hover {
+    background: #222 !important;
+}
+
+/* Input field */
+.phone-input-field {
+    background: black !important;
+    border: 2px solid white !important;
+    border-left: none !important;
+    border-radius: 0 !important;
+    color: white !important;
+    font-family: monospace !important;
+    font-size: 1rem !important;
+    padding: 0.75rem !important;
+    padding-left: 0.5rem !important;
+    width: 100% !important;
+    height: auto !important;
+}
+
+.phone-input-field:focus {
+    outline: none !important;
+    border-color: white !important;
+    box-shadow: none !important;
+}
+
+.phone-input-field::placeholder {
+    color: #666 !important;
+}
+
+/* Country dropdown - opens UPWARD to stay within container */
+.phone-country-dropdown {
+    background: black !important;
+    border: 2px solid white !important;
+    border-radius: 0 !important;
+    max-height: 200px !important;
+    /* Open upward instead of downward */
+    position: absolute !important;
+    bottom: 100% !important;
+    top: auto !important;
+    left: 0 !important;
+    width: 280px !important;
+    margin-bottom: 4px !important;
+    overflow-x: hidden !important;
+}
+
+/* Ensure the country selector has relative positioning for dropdown */
+.react-international-phone-country-selector {
+    position: relative !important;
+}
+
+/* Dropdown items */
+.phone-country-item {
+    background: black !important;
+    color: white !important;
+    padding: 0.5rem 1rem !important;
+}
+
+.phone-country-item:hover {
+    background: #333 !important;
+}
+
+/* Selected/highlighted item */
+.react-international-phone-country-selector-dropdown__list-item--selected,
+.react-international-phone-country-selector-dropdown__list-item--focused {
+    background: #444 !important;
+}
+
+/* Search input in dropdown (if enabled) */
+.react-international-phone-country-selector-dropdown__search {
+    background: black !important;
+    border: none !important;
+    border-bottom: 1px solid #333 !important;
+    color: white !important;
+    padding: 0.5rem !important;
+}
+
+/* Dial code in dropdown */
+.react-international-phone-country-selector-dropdown__list-item-dial-code {
+    color: #888 !important;
+}
+
+/* Dial code preview (displayed between flag and input) */
+.phone-dial-code-preview {
+    background: black !important;
+    color: white !important;
+    font-family: monospace !important;
+    font-size: 1rem !important;
+    padding: 0.75rem 0 !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.5rem !important;
+    border-top: 2px solid white !important;
+    border-bottom: 2px solid white !important;
+    border-left: 2px solid white !important;
+    border-right: none !important;
+}

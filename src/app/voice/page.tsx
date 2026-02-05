@@ -24,6 +24,9 @@ export default function VoicePage() {
   const [events, setEvents] = useState<any[]>([]);
   const [messages, setMessages] = useState<any[]>([]);
   const [isMuted, setIsMuted] = useState(false);
+  const [isPhoneMode, setIsPhoneMode] = useState(false); // New state for Phone Mode focus
+
+  // ... (existing effects remain the same) ...
 
   // Realtime Client & Streams
   const realtimeClientRef = useRef<any>(null);
@@ -120,12 +123,13 @@ export default function VoicePage() {
       padding: '2rem',
       gap: '2rem'
     }}>
-      {/* Header */}
+      {/* ... Header ... */}
       <header style={{
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'flex-start'
       }}>
+        {/* ... (Header content same as before) ... */}
         <div>
           <Link href="/">
             <h1 style={{ fontSize: '3rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Voice AI</h1>
@@ -167,6 +171,30 @@ export default function VoicePage() {
           backgroundColor: 'black',
         }}>
 
+          {/* Back Button (Only in Phone Mode) */}
+          {!isActive && isPhoneMode && (
+            <button
+              onClick={() => setIsPhoneMode(false)}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                left: '1rem',
+                background: 'transparent',
+                border: 'none',
+                color: 'white',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                fontSize: '0.9rem',
+                textTransform: 'uppercase',
+                zIndex: 10
+              }}
+            >
+              ← Back
+            </button>
+          )}
+
           {/* Container for Centered Content */}
           <div style={{
             flex: 1,
@@ -177,7 +205,7 @@ export default function VoicePage() {
             position: 'relative'
           }}>
 
-            {/* ACTIVE STATE: The "Cockpit" */}
+            {/* CASE 1: Active Voice Session ("Cockpit") */}
             {isActive ? (
               <div style={{
                 display: 'flex',
@@ -207,7 +235,6 @@ export default function VoicePage() {
                   </div>
 
                   {/* User Mic */}
-                  {/* User Mic (Fixed Width) - Clickable Mute Toggle */}
                   <div
                     onClick={() => setIsMuted(!isMuted)}
                     style={{
@@ -254,24 +281,37 @@ export default function VoicePage() {
                 </div>
               </div>
             ) : (
-              /* IDLE / LOADING STATE: Start Button */
-              <div style={{
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center'
-              }}>
-                <VoiceButton
-                  isActive={isActive}
-                  isLoading={isConnecting}
-                  onClick={handleToggleSession}
-                />
-              </div>
+              /* CASE 2: Not Active */
+              /* If Phone Mode -> Show Phone Input Call Centered */
+              /* If Split Mode -> Show Voice Start Button here (Top Half) */
+              <>
+                {isPhoneMode ? (
+                  <div style={{ width: '100%', maxWidth: '350px' }}>
+                    <PhoneCall
+                      onCall={(phone) => console.log('Calling:', phone)}
+                      onFocus={() => setIsPhoneMode(true)}
+                    />
+                  </div>
+                ) : (
+                  <div style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'center'
+                  }}>
+                    <VoiceButton
+                      isActive={isActive}
+                      isLoading={isConnecting}
+                      onClick={handleToggleSession}
+                    />
+                  </div>
+                )}
+              </>
             )}
 
           </div>
 
-          {/* Idle State Elements (Only visible when NOT active) */}
-          {!isActive && (
+          {/* Idle State Elements (Split View Bottom Half) - Only visible when NOT active and NOT phone mode */}
+          {!isActive && !isPhoneMode && (
             <div style={{
               display: 'flex',
               flexDirection: 'column',
@@ -293,10 +333,11 @@ export default function VoicePage() {
                 <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
               </div>
 
-              {/* Phone Call Input */}
+              {/* Phone Call Input (Bottom Slot) */}
               <div style={{ flex: 1, minHeight: 0 }}>
                 <PhoneCall
                   onCall={(phone) => console.log('Calling:', phone)}
+                  onFocus={() => setIsPhoneMode(true)}
                 />
               </div>
             </div>
