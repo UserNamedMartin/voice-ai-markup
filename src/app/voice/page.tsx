@@ -25,6 +25,8 @@ export default function VoicePage() {
   const [messages, setMessages] = useState<any[]>([]);
   const [isMuted, setIsMuted] = useState(false);
   const [isPhoneMode, setIsPhoneMode] = useState(false); // New state for Phone Mode focus
+  const [phoneLoading, setPhoneLoading] = useState(false);
+  const [phoneSuccess, setPhoneSuccess] = useState<string | null>(null);
 
   // ... (existing effects remain the same) ...
 
@@ -115,6 +117,29 @@ export default function VoicePage() {
     }
   };
 
+  const handlePhoneCall = async (phone: string) => {
+    setPhoneLoading(true);
+    setPhoneSuccess(null);
+    try {
+      const res = await fetch('/api/call', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone })
+      });
+      if (res.ok) {
+        setPhoneSuccess("You will receive a call in a moment.");
+      } else {
+        const error = await res.json();
+        alert(`Failed to initiate call: ${error.error || 'Unknown error'}`);
+      }
+    } catch (e) {
+      console.error(e);
+      alert("Error initiating call");
+    } finally {
+      setPhoneLoading(false);
+    }
+  };
+
   return (
     <main style={{
       display: 'grid',
@@ -171,38 +196,18 @@ export default function VoicePage() {
           backgroundColor: 'black',
         }}>
 
-          {/* Back Button (Only in Phone Mode) */}
-          {!isActive && isPhoneMode && (
-            <button
-              onClick={() => setIsPhoneMode(false)}
-              style={{
-                position: 'absolute',
-                top: '1rem',
-                left: '1rem',
-                background: 'transparent',
-                border: 'none',
-                color: 'white',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                fontSize: '0.9rem',
-                textTransform: 'uppercase',
-                zIndex: 10
-              }}
-            >
-              ← Back
-            </button>
-          )}
 
-          {/* Container for Centered Content */}
+
+          {/* Left Column content container */}
           <div style={{
             flex: 1,
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center',
             alignItems: 'center',
-            position: 'relative'
+            position: 'relative',
+            height: '100%',
+            overflow: 'hidden'
           }}>
 
             {/* CASE 1: Active Voice Session ("Cockpit") */}
@@ -215,8 +220,7 @@ export default function VoicePage() {
                 maxWidth: '450px',
                 padding: '0 2rem'
               }}>
-
-                {/* Row 1: Visualizers */}
+                {/* Visualizers Row */}
                 <div style={{
                   display: 'flex',
                   gap: '1rem',
@@ -250,7 +254,6 @@ export default function VoicePage() {
                       width="100%"
                       height="100%"
                     />
-                    {/* Mic Icon Overlay */}
                     <div style={{
                       position: 'absolute',
                       top: 0,
@@ -271,7 +274,7 @@ export default function VoicePage() {
                   </div>
                 </div>
 
-                {/* Row 2: Stop Button */}
+                {/* Stop Button Row */}
                 <div style={{ width: '100%' }}>
                   <VoiceButton
                     isActive={isActive}
@@ -281,22 +284,51 @@ export default function VoicePage() {
                 </div>
               </div>
             ) : (
-              /* CASE 2: Not Active */
-              /* If Phone Mode -> Show Phone Input Call Centered */
-              /* If Split Mode -> Show Voice Start Button here (Top Half) */
-              <>
-                {isPhoneMode ? (
-                  <div style={{ width: '100%', maxWidth: '350px' }}>
-                    <PhoneCall
-                      onCall={(phone) => console.log('Calling:', phone)}
-                      onFocus={() => setIsPhoneMode(true)}
-                    />
-                  </div>
-                ) : (
+              /* CASE 2: Idle State (Unified Container) */
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                width: '100%', // full width
+                height: '100%' // full height
+              }}>
+
+                {/* Back Button (Only in Phone Mode) */}
+                {isPhoneMode && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent re-triggering focus
+                      setIsPhoneMode(false);
+                    }}
+                    style={{
+                      position: 'absolute',
+                      top: '1rem',
+                      left: '1rem',
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'white',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      fontSize: '0.9rem',
+                      textTransform: 'uppercase',
+                      zIndex: 20,
+                      lineHeight: 1
+                    }}
+                  >
+                    <span style={{ position: 'relative', top: '-1.5px' }}>←</span> Back
+                  </button>
+                )}
+
+                {/* Top Section: Voice Button (Hidden in Phone Mode) */}
+                {/* We conditionally render it so it unmounts, allowing PhoneCall to take up space. */}
+                {!isPhoneMode && (
                   <div style={{
-                    width: '100%',
+                    flex: 1,
                     display: 'flex',
-                    justifyContent: 'center'
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minHeight: 0 // Allow shrinking
                   }}>
                     <VoiceButton
                       isActive={isActive}
@@ -305,43 +337,57 @@ export default function VoicePage() {
                     />
                   </div>
                 )}
-              </>
+
+                {/* Separator (Hidden in Phone Mode) */}
+                {!isPhoneMode && (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '1rem',
+                    color: '#666',
+                    fontWeight: 'bold',
+                    fontSize: '0.9rem',
+                    flexShrink: 0
+                  }}>
+                    <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
+                    <span style={{ padding: '0 1rem' }}>OR</span>
+                    <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
+                  </div>
+                )}
+
+                {/* Bottom Section: Phone Call (Always mounted so it preserves state) */}
+                {/* It expands to fill available space (flex: 1) */}
+                <div style={{
+                  flex: 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: 0,
+                  transition: 'all 0.3s ease' // Smooth transition if possible
+                }}>
+                  <div style={{ width: '100%', maxWidth: '350px' }}>
+                    <PhoneCall
+                      onCall={handlePhoneCall}
+                      // When clicking, we switch to Phone Mode. 
+                      // Since component stays mounted, focus/dropdown state should persist.
+                      onFocus={() => {
+                        if (!isPhoneMode) setIsPhoneMode(true);
+                      }}
+                      isLoading={phoneLoading}
+                      successMessage={phoneSuccess}
+                    // autoFocus logic:
+                    // If we are already in phone mode, we probably don't need to force focus via prop if the user clicked.
+                    // But if we want consistent behavior, passing correct prop helps.
+                    // Actually, if we preserve instance, the 'autoFocus' prop on mount doesn't re-run.
+                    />
+                  </div>
+                </div>
+
+              </div>
             )}
 
           </div>
-
-          {/* Idle State Elements (Split View Bottom Half) - Only visible when NOT active and NOT phone mode */}
-          {!isActive && !isPhoneMode && (
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              flex: 1
-            }}>
-              {/* Separator */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '1rem',
-                color: '#666',
-                fontWeight: 'bold',
-                fontSize: '0.9rem',
-                flexShrink: 0
-              }}>
-                <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
-                <span style={{ padding: '0 1rem' }}>OR</span>
-                <div style={{ height: '1px', background: '#333', flex: 1 }}></div>
-              </div>
-
-              {/* Phone Call Input (Bottom Slot) */}
-              <div style={{ flex: 1, minHeight: 0 }}>
-                <PhoneCall
-                  onCall={(phone) => console.log('Calling:', phone)}
-                  onFocus={() => setIsPhoneMode(true)}
-                />
-              </div>
-            </div>
-          )}
 
         </div>
 
